@@ -1,0 +1,21 @@
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Sociedade Serial.exe.config
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Sociedade Serial.exe
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Sociedade Serial.pdb
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Agilent.TMFramework.InstrumentIO.VisaInterop.dll
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Ivi.Visa.dll
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Keysight.Visa.dll
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Ivi.Visa.xml
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Release\Keysight.Visa.xml
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.csprojAssemblyReference.cache
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.exe.config
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\MainWindow.g.cs
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\App.g.cs
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial_MarkupCompile.cache
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial_MarkupCompile.lref
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\MainWindow.baml
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.g.resources
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade_Serial.Properties.Resources.resources
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.csproj.GenerateResource.cache
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.csproj.CopyComplete
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.exe
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Release\Sociedade Serial.pdb

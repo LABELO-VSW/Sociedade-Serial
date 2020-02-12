@@ -1,0 +1,21 @@
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.csprojAssemblyReference.cache
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\MainWindow.g.cs
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\App.g.cs
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial_MarkupCompile.cache
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial_MarkupCompile.lref
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Sociedade Serial.exe.config
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Sociedade Serial.exe
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Sociedade Serial.pdb
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\MainWindow.baml
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.g.resources
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade_Serial.Properties.Resources.resources
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.csproj.GenerateResource.cache
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.exe
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.pdb
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Agilent.TMFramework.InstrumentIO.VisaInterop.dll
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Ivi.Visa.dll
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Keysight.Visa.dll
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Ivi.Visa.xml
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\bin\Debug\Keysight.Visa.xml
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.exe.config
+C:\Users\10086519\Desktop\Sociedade Serial\Projeto C#\Sociedade Serial\Sociedade Serial\obj\Debug\Sociedade Serial.csproj.CopyComplete
