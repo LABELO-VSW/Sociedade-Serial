@@ -1,31 +1,192 @@
-﻿using System;
+﻿
+using System.IO.Ports;
+using System.IO;
+using Json.Net;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Globalization;
+using System;
+using System.Threading;
 namespace Sociedade_Serial
 {
-    class utils
+    public class utils
     {
-        
-        public string Ascii2Hex(string ascii_value)
+        public struct script
         {
-            /*
-            * converts ascii text to an string with hex values
-            * @param ascii
-         */
-            string hex = "";
-            for(int i = 0; i < ascii_value.Length; i++)
+            public string name;
+            public List<command> commands;
+        }
+        public struct command
+        {
+            public string name;
+            public string send_script;
+            public string send;
+            public crc checksum;
+            public string receive_script;
+            public string receive;
+
+        }
+        
+        public struct testFrames
+        {
+            public string raw, processed;
+        }
+        public struct test_results {
+            public testFrames sent;
+            public string expectedAnswer;
+            public testFrames realAnswer;
+            public bool evaluation;
+        }
+
+        public struct ScriptAnswer
+        {
+            public bool newRound;
+            public string processed_frame;
+            public string error;
+        };
+
+
+        public class constants
+        {
+            public readonly int[] baudRates = new int[] { 110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200 };
+            public readonly int[] dataBits = new int[] { 5, 6, 7, 8, };
+            public readonly string[] stopBits = new string[] { "1", "2", "1.5" };
+            public readonly string[] parity = new string[] { "None", "Odd", "Even", "Mark", "Space" };
+            public readonly string[] flowControl = new string[] { "None", "XOnXOff", "RequestToSend", "RequestToSendXOnXOff" };
+        }
+
+        public static script loadScript(string address)
+        {
+             using (StreamReader r = new StreamReader(address))
             {
-                hex += ascii_value[i] > 57 ? ascii_value[i] - 55 : ascii_value[i] - 48;
-                if (i % 2 == 0)
-                {
-                    hex += " ";
-                }
+                string json = r.ReadToEnd();
+                script x = JsonConvert.DeserializeObject<script>(json);
+
+                return x;
+
             }
 
-            return hex;
+
         }
+
+        public static void saveScript(string address, script s)
+        {
+            using (StreamWriter w = new StreamWriter(address))
+            {
+                w.Write(JsonConvert.SerializeObject(s));
+                
+            }
+
+
+        }
+        public static string getFrameFormat(string str, bool inverse)
+        {
+            string s = "";
+            str = str.Replace(" ", "");
+            if (!inverse)
+            {
+                for (int i=0; i < str.Length; i++)
+                {
+                    if (i % 2 == 0 & i > 0) s += " ";
+                    s += str[i];
+                }
+            }
+            else
+            {
+
+                for (int i = str.Length-1; i >= 0; i-=2)
+                {                   
+                    s += $"{str[i-1]}{str[i]} ";
+                }
+            }
+            return s;
+        }
+
+        public static ScriptAnswer callScript(string script_name, string raw_send, string raw_answer, int round)
+        {
+            Process proc = new Process();
+            script_name = $"T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts\\{script_name}";
+
+            proc.StartInfo = new ProcessStartInfo
+            {
+                FileName = "node.exe",
+                CreateNoWindow = true,
+                Arguments = $"\"{script_name}\" \"raw_send:{raw_send}\" \"round:{round.ToString()}\" \"raw_answer:{raw_answer}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
+
+            proc.Start();
+            while (!proc.HasExited && proc.Responding)
+            {
+                Thread.Sleep(50);
+            }
+            ScriptAnswer sa = new ScriptAnswer();
+
+            sa.newRound = false;
+
+            while (!proc.StandardOutput.EndOfStream)
+            {
+                string str = proc.StandardOutput.ReadLine().Replace(",", "").Replace("'", "");
+
+                if (str.IndexOf("newRound") != -1)
+                {
+                    string pstr = str.Substring(str.IndexOf("newRound"));
+                    sa.newRound = pstr.Split(':')[1].Trim() == "true";
+                }
+                else if (str.IndexOf("processed_frame") != -1)
+                {
+                    string pstr = str.Substring(str.IndexOf("processed_frame"));
+                    sa.processed_frame = pstr.Split(':')[1].Trim();
+                }
+                else if (str.IndexOf("error") != -1)
+                {
+                    string pstr = str.Substring(str.IndexOf("error"));
+                    sa.error = pstr.Split(':')[1].Trim();
+                }
+            }
+            return sa;
+        }
+        
+        public static byte[] str2Hex(string str)
+        {
+            
+            List<byte> b = new List<byte>();
+            str = str.Replace(" ", "");
+
+            bool i = false;
+            string strHex = "";
+
+            if (str.Length % 2 > 0)
+                str += "0";
+
+            foreach (char c in str)
+            {
+                strHex += c.ToString();
+                if (i)
+                {
+                    try
+                    {
+                        b.Add(byte.Parse(strHex, NumberStyles.HexNumber));
+                        strHex = "";
+                    }
+                    catch
+                    {
+                        Console.WriteLine(str);
+                    }
+                    
+                }
+                i = !i;
+
+            }
+
+            return b.ToArray();
+        }
+
+
     }
+
+  
+    
 }

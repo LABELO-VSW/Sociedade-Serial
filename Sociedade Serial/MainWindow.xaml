@@ -5,101 +5,155 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Sociedade_Serial"
         mc:Ignorable="d"
-        Title="Sociedade Serial" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+
+        Title="Sociedade Serial" WindowStartupLocation="CenterScreen">
 
     <Grid>
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="20"></RowDefinition>
-                <RowDefinition Height="65"></RowDefinition>
-                <RowDefinition Height="50"></RowDefinition>
-                <RowDefinition Height="50"></RowDefinition>
-                <RowDefinition Name="results"></RowDefinition>
+                <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <Menu Grid.Row="0" Grid.ColumnSpan="7">
+            <Menu Grid.Row="0" Grid.ColumnSpan="7" Name="Menu">
                 <MenuItem Name="file" Header="Arquivo">
-                    <MenuItem Name="save" Header="Salvar Como" Click="save_Click"></MenuItem>
+                    <MenuItem Name="save" Header="Salvar ensaio" Click="save_Click"></MenuItem>
+                    <MenuItem Name="save_log" Header="Salvar Log" Click="save_log_Click"/>
+                    <MenuItem Name="script_save" Header="Salvar script" Click="script_save_Click"></MenuItem>
                 </MenuItem>
                 <MenuItem Name="help" Header="Ajuda">
                     <MenuItem Name="about" Header="Sobre" Click="about_Click"></MenuItem>
-                    <MenuItem Name="docs" Header="Docs"></MenuItem>
                 </MenuItem>
             </Menu>
 
-            <Label Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" FontWeight="Bold" Margin="10, 0">Porta</Label>
-            <ComboBox Grid.Row="1" Name="port" Grid.Column="0"/>
-
-            <Label Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" FontWeight="Bold" Margin="10, 0">Data bits</Label>
-            <ComboBox Grid.Row="1" Name="dataBits"  Grid.Column="1"/>
-
-            <Label Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" FontWeight="Bold" Margin="10, 0">Stop bits</Label>
-            <ComboBox Grid.Row="1" Name="stopBits"  Grid.Column="2"/>
-
-            <Label Grid.Row="1" Grid.Column="3" VerticalAlignment="Top" FontWeight="Bold" Margin="10, 0">Baudrate</Label>
-            <ComboBox Grid.Row="1" Name="baudrate"   Grid.Column="3"/>
-
-            <Label Grid.Row="1" Grid.Column="4" VerticalAlignment="Top" FontWeight="Bold" Margin="10, 0">Paridade</Label>
-            <ComboBox Grid.Row="1" Name="parity"   Grid.Column="4"/>
-
-            <Label Grid.Row="1" Grid.Column="5" VerticalAlignment="Top" FontWeight="Bold" Margin="10, 0">Flow control</Label>
-            <ComboBox Grid.Row="1" Name="flowControl"  Grid.Column="5"/>
-
-            <Label Grid.Row="1" Grid.Column="6" VerticalAlignment="Top" FontWeight="Bold" Margin="10,0">TAG</Label>
-            <TextBox Name="tag" Grid.Row="1" Grid.Column="6" VerticalAlignment="Bottom" Height="30px"/>
-
-            <Button Name="scriptAddress" Click="scriptAddress_Click" Content="Selecione um Script" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Background="White" Foreground="MidnightBlue"></Button>
-            <Button Name="execute" Content="Executar" Grid.Column="2" Click="execute_Click" Grid.Row="2"></Button>
-            <Button Name="conect" Content="Conectar" Grid.Column="0" Click="conect_Click" Grid.Row="3" Background="DarkBlue" Foreground="White"></Button>
-            <Button Name="disconect" Content="Desconectar" Grid.Column="1" Margin="10" Click="disconect_Click" Grid.Row="3" Background="DarkRed" Foreground="White"></Button>
-
-            <Button Name="clean" Content="Limpar" Grid.Column="2" Margin="10" Click="clean_Click" Grid.Row="3"></Button>
-
-            <Button Name="buffer" Content="BufferOverflow" Click="buffer_Click" Grid.Column="3" Grid.Row="2" Height="30px" Margin="10" Grid.ColumnSpan="1"></Button>
-            <TextBox Name="test_time" Grid.Column="4" Grid.Row="2" Text="00:25:00"/>
-            <Button Name="finish" Content="Finalizar" Grid.Column="5" Margin="10" Click="finish_Click" Grid.Row="2"></Button>
-            <TextBox Name ="ManualFrame" Grid.Column="3" Grid.Row="3" Grid.ColumnSpan="3" HorizontalContentAlignment="Left"></TextBox>
-            <Button Name="send" Click="send_Click" Grid.Column="7" Grid.Row="3" Content="Enviar" Background="DarkGreen" Foreground="White"></Button>
-            <ScrollViewer Grid.Column="0" Grid.ColumnSpan="7" Grid.Row="4" Margin="5" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"  CanContentScroll="True">
-                <TextBlock Name="screenText"  FontSize="12" TextWrapping="Wrap" SizeChanged="screenText_SizeChanged">
-
-                </TextBlock>
-            </ScrollViewer>
-            <Border BorderBrush="Gray" BorderThickness="0.5" Grid.ColumnSpan="7" Grid.Column="0" Margin="5" Grid.Row="4"/>
+            <TabControl  Grid.Row="1">
+                <TabItem Header="Configurações">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MaxWidth="130px" Width="{Binding ElementName=Container,Path=ActualWidth}"></ColumnDefinition>
+                            <ColumnDefinition MaxWidth="300px" Width="{Binding ElementName=Container,Path=ActualWidth}"></ColumnDefinition>
+                            <ColumnDefinition MaxWidth="150px" Width="{Binding ElementName=Container,Path=ActualWidth}"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <Label>Porta</Label>
+                            <Label>Data bits</Label>
+                            <Label>Stop bits</Label>
+                            <Label>Baudrate</Label>
+                            <Label>Paridade</Label>
+                            <Label>Flow control</Label>
+                            <Label Margin="10,40">TAG</Label>
+                            <Label Margin="10,-10" Content="TimeOut"></Label>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <ComboBox Name="port"/>
+                            <ComboBox Name="dataBits"/>
+                            <ComboBox Name="stopBits"/>
+                            <ComboBox Name="baudrate"/>
+                            <ComboBox Name="parity"/>
+                            <ComboBox Name="flowControl"/>
+                            <StackPanel Orientation="Horizontal">
+                                <CheckBox Name="dtr" Content="DTR" Margin="10"/>
+                                <CheckBox Name="rts" Content="RTS" Margin="10"/>
+                            </StackPanel>
+                            <TextBox Name="tag"/>
+                            <TextBox Name="timeout"></TextBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Button Name="conect" Content="Conectar" Background="DarkBlue" Click="conect_Click"/>
+                            <Button Name="disconect" Content="Desconectar" Height="30" Background="DarkRed"  Click="disconect_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Comunicação">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50px"></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Name="scriptAddress" Click="scriptAddress_Click" Margin="5"  ToolTip="Importar script" Width="50px">
+                                <Image Source="Resources\file.png" Height="20px"></Image>
+                            </Button>
+                            <Button Name="send" Click="send_Click" Margin="5" ToolTip="Enviar comandos" Width="50px">
+                                <Image Source="Resources\send.png" Height="20px"></Image>
+                            </Button>
+                            <Button Name="buffer" Click="buffer_Click" Margin="5" ToolTip="Buffer Overflow" Width="50px">
+                                <Image Source="Resources\buffer.png" Height="20px"></Image>
+                            </Button>
+                            <Button Name="finish" Click="finish_Click" Margin="5" ToolTip="Parar envio de dados" Width="50px">
+                                <Image Source="Resources\finish.png" Height="20px"></Image>
+                            </Button>
+                            <Button Name="clean"  Click="clean_Click" Margin="5" ToolTip="Limpar tela" Width="50px">
+                                <Image Source="Resources\clean.png" Height="20px"></Image>
+                            </Button>
+                            <TextBox Name="test_time" Text="00:25:00" Width="135px"/>
+                            <StackPanel Orientation="Horizontal" Margin="20,0">
+                                <Label Content="Status:"></Label>
+                                <Label Content="    " Name="partial_result" Margin="0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition MaxWidth="450px" Width="{Binding ElementName=Container, Path=ActualWidth}"/>
+                                <ColumnDefinition MaxWidth="50px"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30px"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Name="c1"/>
+                                <Border Grid.Column="1" Name="c2"/>
+                                <ListView Name="commands" Grid.Column="0" SelectionMode="Extended" AlternationCount="100000" Grid.ColumnSpan="2">
+                                    <ListView.View>
+                                        <GridView AllowsColumnReorder="False">
+                                            <GridViewColumn 
+                                            Header="#" Width="{Binding ElementName=c1,Path=ActualWidth}"
+                                            DisplayMemberBinding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ListViewItem}}">
+                                            </GridViewColumn>
+                                            <GridViewColumn 
+                                            Header="Comandos"
+                                            Width="{Binding ElementName=c2,Path=ActualWidth}">
+                                            </GridViewColumn>
+                                            <GridView.ColumnHeaderContainerStyle>
+                                                <Style TargetType="GridViewColumnHeader">
+                                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                                    <Setter Property="Height" Value="20px"/>
+                                                </Style>
+                                            </GridView.ColumnHeaderContainerStyle>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <Button Name="selectAll"                                        
+                                        Click="selectAll_Click"
+                                        Style="{DynamicResource selectAll}">                                   
+                                </Button>
+                            </Grid>
+                            <StackPanel Orientation="Vertical" Grid.Column="1">
+                                <Button Name="add"  Click="add_Click" Margin="5" ToolTip="Novo comando">
+                                    <Image Source="Resources\add.png" Height="15px"></Image>
+                                </Button>
+                                <Button Name="edit"  Click="edit_Click" Margin="5" ToolTip="Editar comando">
+                                    <Image Source="Resources\edit.png" Height="15px"></Image>
+                                </Button>
+                                <Button Name="remove"  Click="remove_Click" Margin="5" ToolTip="Remover comando">
+                                    <Image Source="Resources\remove.png" Height="15px"></Image>
+                                </Button>
+                            </StackPanel>
+                            <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled"  CanContentScroll="True" Margin="10">
+                                <TextBlock Name="screenText"  FontSize="12" TextWrapping="Wrap" SizeChanged="screenText_SizeChanged">
+                                </TextBlock>
+                            </ScrollViewer>
+                            <Border BorderBrush="Gray" BorderThickness="1" Grid.Column="2"/>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Grid>
 
     </Grid>
     <Window.Resources>
-        <Style TargetType="ComboBox">
-            <Setter Property="Background" Value="LightGray"></Setter>
-            <Setter Property="Foreground" Value="Black"></Setter>
-            <Setter Property="FontSize"  Value="10pt"></Setter>
-            <Setter Property="Cursor"  Value="Hand"></Setter>
-            <Setter Property="Margin" Value="10"></Setter>
-            <Setter Property="VerticalAlignment" Value="Bottom"></Setter>
-            <Setter Property="AllowDrop" Value="True"></Setter>
-            <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-        </Style>
-        <Style TargetType="Button">
-            <Setter Property="Cursor" Value="Hand"></Setter>
-            <Setter Property="FontSize" Value="10pt"></Setter>
-            <Setter Property="FontWeight" Value="Bold"></Setter>
-            <Setter Property="Margin" Value="10"></Setter>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="Margin" Value="10"></Setter>
-            <Setter Property="FontSize" Value="10pt"></Setter>
-            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
-            <Setter Property="FontWeight" Value="Bold"></Setter>
-        </Style>
+        <ResourceDictionary Source="/styles.xaml"/>
+       
     </Window.Resources>
 </Window>

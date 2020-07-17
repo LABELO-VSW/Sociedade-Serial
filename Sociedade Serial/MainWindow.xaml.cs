@@ -1,66 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.IO.Ports;
 using System.Timers;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
+using System.Threading;
+
+
+
 namespace Sociedade_Serial
 {
     /// <summary>
     /// Interação lógica para MainWindow.xam
     /// </summary>
+    /// 
+    enum state
+    {
+        disconnected,
+        connected,
+        sendingBuffer,
+        runningScript
+    }
+        
     public partial class MainWindow : Window
     {
         SerialPort s0 = new SerialPort();
+
+        string receive = "";
                
         DateTime lastRead = DateTime.Now;
 
-        Timer buffer_timer;
+        System.Timers.Timer buffer_timer;
+
+        bool scriptRunning = false;
 
         DateTime buffer_timestamp;
 
+        utils.script script = new utils.script();
+
+        List<string> tags = new List<string>();
+
+        List<string> replacer = new List<string>();
 
         List<string> htmlTextOutput = new List<string>();
+
+        bool total_evaluation = true;
+        commandWindow commandWindow;
         public MainWindow()
         {
-            constants c = new constants();
-            
-            InitializeComponent();          
+            utils.constants c = new utils.constants();
+
+            this.WindowState = WindowState.Maximized;
+            InitializeComponent();
+
             
             this.baudrate.ItemsSource = c.baudRates;
             this.dataBits.ItemsSource = c.dataBits;
             this.stopBits.ItemsSource = c.stopBits;
             this.parity.ItemsSource = c.parity;
             this.flowControl.ItemsSource = c.flowControl;
-            this.port.ItemsSource = SerialPort.GetPortNames();
-            this.disconect.IsEnabled = false;
-            this.send.IsEnabled = false;
-            this.execute.IsEnabled = false;
-            this.buffer.IsEnabled = false;
-            this.finish.IsEnabled = false;
-            
-            buffer_timer = new Timer() { Interval = 1};
-            buffer_timer.Elapsed += Buffer_timer_Elapsed; ;
+            this.port.GotMouseCapture += Port_GotMouseCapture;
+
+            this.baudrate.SelectedIndex = 5;
+            this.dataBits.SelectedIndex = 3;
+            this.stopBits.SelectedIndex = 0;
+            this.parity.SelectedIndex = 0;
+            this.flowControl.SelectedIndex = 0;
+            this.timeout.Text = 2000.ToString();
+            updateScreenButtons(state.disconnected);
+
+            buffer_timer = new System.Timers.Timer() { Interval = 1};
+            buffer_timer.Elapsed += Buffer_timer_Elapsed;
+            script.commands = new List<utils.command>();
 
         }
 
-        private void UpdateScreen_Elapsed(object sender, ElapsedEventArgs e)
+        private void disconect_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
-        }
 
-        private void execute_Click(object sender, RoutedEventArgs e)
-        {
+            try
+            {
+                if (buffer_timer.Enabled) buffer_timer.Stop();
+                s0.DiscardOutBuffer();
+                s0.Close();
+                s0 = null;
+                updateScreenButtons(state.disconnected);
+
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
 
         }
 
@@ -76,90 +108,101 @@ namespace Sociedade_Serial
                 s0.ReadTimeout = 2000;
                 s0.WriteTimeout = 2000;
                 s0.PortName = this.port.Text;
-                this.conect.IsEnabled = false;
-                this.disconect.IsEnabled = true;
-                this.send.IsEnabled = true;
-                this.execute.IsEnabled = true;
-                this.buffer.IsEnabled = true;
-                
                 s0.DataReceived += S0_DataReceived;
+                s0.RtsEnable = this.dtr.IsChecked == true;
+                s0.DtrEnable = this.rts.IsChecked == true;
                 s0.Open();
+                updateScreenButtons(state.connected);
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 if (s0.IsOpen) s0.Close();
-               
+                updateScreenButtons(state.disconnected);
+
             }
-                    
-                
+
+
         }
 
         private void S0_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string str = "";
-
-            if (DateTime.Now.Subtract(lastRead) > new TimeSpan(2000000))
+            if (scriptRunning)
             {
-                if (htmlTextOutput.Count>0)
+                string str = "";
+                while (s0.BytesToRead > 0)
                 {
-                    str += $"\n\n";
-                    htmlTextOutput.Add($"<br><br>");
+                    str += $"{s0.ReadByte().ToString("x2").ToUpper()} ";
+
                 }
-                str += $"[{DateTime.Now}] - Leitura: ";
+                receive += str;
             }
-            lastRead = DateTime.Now;
-
-            while (s0.BytesToRead > 0)
+            else
             {
-                str += $"{s0.ReadByte().ToString("x2").ToUpper()} ";
+                string str = "";
+                if (DateTime.Now.Subtract(lastRead) > new TimeSpan(2000000))
+                {
+                    str += $"\n\n[{DateTime.Now}] - Leitura: ";
+                }
+                lastRead = DateTime.Now;
+                string pstr = "";
+                while (s0.BytesToRead > 0)
+                {
+                    pstr += $"{s0.ReadByte().ToString("x2").ToUpper()} ";
+
+                }
+                str += pstr;
+
+                this.screenText.Dispatcher.Invoke((Action)(() =>
+                {
+
+                    Run r = new Run(str);
+
+                    r.Foreground = Brushes.DarkRed;
+
+                    this.screenText.Inlines.Add(r);
+
+                    if (!this.buffer.IsEnabled) htmlTextOutput.Add($"<font color=\"#FF0000\">{r.Text.Replace("\n","<br>")}</font>"); 
+
+
+                }));
             }
             
-            
-
-            this.screenText.Dispatcher.Invoke((Action)(() =>
-            {
-
-                Run r = new Run(str);
-
-                htmlTextOutput.Add("<font color=red>" + r.Text + "</font>");
-
-
-                r.Foreground = Brushes.DarkRed;
-
-                this.screenText.Inlines.Add(r);
-                
-            }));
           
-        }
-
-        private void disconect_Click(object sender, RoutedEventArgs e)
-        {
-          
-            try
-            {
-                if(buffer_timer.Enabled) buffer_timer.Stop();
-                s0.DiscardOutBuffer();
-                s0.Close();
-                s0 = null;
-                this.conect.IsEnabled = true;
-                this.disconect.IsEnabled = false;
-                this.send.IsEnabled = false;
-                this.execute.IsEnabled = false;
-                this.buffer.IsEnabled = false;
-                this.finish.IsEnabled = false;
-                this.test_time.IsEnabled = true;
-
-            }
-            catch(Exception exception)
-            {
-                MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
         }
 
         private void scriptAddress_Click(object sender, RoutedEventArgs e)
         {
+            
+            Microsoft.Win32.OpenFileDialog newScript = new Microsoft.Win32.OpenFileDialog();
+            newScript.Filter = "Script|*.json";
+            if (newScript.ShowDialog() == true)
+            {
+                try
+                {
+                    script = new utils.script();
+                    script = utils.loadScript(newScript.FileName);
+                    this.commands.Items.Clear();
+     
+                    
+                    tags.Clear();
+                    replacer.Clear();
+
+                    foreach (utils.command c in script.commands)
+                    {
+                        this.commands.Items.Add(c.name);
+                        
+                    }                   
+
+                                        
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                
+            }
+            
 
         }
 
@@ -167,10 +210,8 @@ namespace Sociedade_Serial
         {
             
             buffer_timer.Start();
-            this.buffer.IsEnabled = false;
-            this.finish.IsEnabled = true;
-            this.test_time.IsEnabled = false;
             buffer_timestamp = DateTime.Now;
+            updateScreenButtons(state.sendingBuffer);
 
         }
 
@@ -179,7 +220,7 @@ namespace Sociedade_Serial
             buffer_timer.Stop();
             try 
             {
-                    int n = s0.BaudRate/8;
+                    int n = s0.BaudRate/10;
                     Random r = new Random();
                     byte[] buff = new byte[n];
                     string str = "";
@@ -206,9 +247,7 @@ namespace Sociedade_Serial
                             s0.DiscardOutBuffer();
                             s0.DiscardInBuffer();
                             this.test_time.Text = "00:00:00";
-                            this.buffer.IsEnabled = true;
-                            this.test_time.IsEnabled = true;
-                            this.finish.IsEnabled = false;
+                            updateScreenButtons(state.connected);
                         }
                         else
                         {
@@ -233,45 +272,301 @@ namespace Sociedade_Serial
 
         private void finish_Click(object sender, RoutedEventArgs e)
         {
-            s0.DiscardOutBuffer();
-            s0.DiscardInBuffer();
-            buffer_timer.Stop();
+            scriptRunning = false;
+            try
+            {
+                s0.DiscardOutBuffer();
+                s0.DiscardInBuffer();
+                buffer_timer.Stop();
+            }
+            catch
+            {
+                buffer_timer.Stop();
+            }
             buffer_timer.Enabled = false;
-            this.buffer.IsEnabled = true;
-            this.finish.IsEnabled = false;
-            this.test_time.IsEnabled = true;
+            updateScreenButtons(state.connected);
         }
 
         private void send_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ManualFrame.Text != "")
+            if (this.commands.SelectedItems.Count == 0) return;
+
+            List<utils.command> c_list = new List<utils.command>();
+
+            for (int i =0; i < this.commands.SelectedItems.Count; i++)
             {
-                string str = this.ManualFrame.Text.ToUpper().Replace(" ", "");
-                byte[] frame = new byte[str.Length];
-                string str2Screen = "";
-                for (int i = 0; i < str.Length; i++)
+                // Import command information 
+                utils.command c = script.commands[this.commands.Items.IndexOf(this.commands.SelectedItems[i])];
+
+                for(int id =0;id<c.send.Length;id++)
                 {
-                    frame[i] = str[i] > 64 ? (byte)(str[i] - 55) : (byte)(str[i] - 48);
-                    str2Screen += frame[i].ToString("x");
-                    if (i % 2 > 0)
+                    if (c.send[id].Equals('#'))
                     {
-                        str2Screen += " ";
+                        string flag = c.send.Substring(id+1).ToUpper();
+                        int new_id = flag.IndexOf('#');
+                        flag = flag.Substring(0, new_id);
+                        id += new_id+1;
+                        if (!tags.Contains(flag) && flag!="CS") tags.Add(flag);
+
+
+                    }
+                    else if (c.send[id].Equals(' ')) c.send.Remove(id, 1);
+                    
+                }
+                for (int id = 0; id < c.receive.Length; id++)
+                {
+                    if (c.receive[id].Equals('#'))
+                    {
+                        string flag = c.receive.Substring(id + 1).ToUpper();
+                        int new_id = flag.IndexOf('#');
+                        flag = flag.Substring(0, new_id);
+                        id += new_id+1;
+                        if (!tags.Contains(flag) && flag != "CS") tags.Add(flag);
+                    }else if (c.receive[id].Equals(' ')) c.receive.Remove(id, 1);
+                }
+                c_list.Add(c);
+            }
+
+            if (tags.Count > 0)
+            {
+                int i = 0;
+                this.IsEnabled = false;
+                ReplaceStrings replace = new ReplaceStrings();
+                
+                foreach (string str in tags)
+                {
+                    string TAG = "";
+                    int maxSize = 256;
+                    if (str.IndexOf(",") != -1)
+                    {
+                        int len = str.IndexOf(",");
+                        Tag = str.Substring(0, len).Replace("#","");
+                        maxSize = int.Parse(str.Substring(len + 1).Replace("#", "").Trim())*2;
+                    }
+                    else
+                    {
+                        Tag = str.Replace("#", "");
+                    }
+                    replace.stack.Children.Add(new Label { Content = Tag, Margin = new Thickness(10, 0, 10, 0), FontWeight = FontWeights.Normal });
+                    if (i<replacer.Count)
+                        replace.stack.Children.Add(new TextBox { 
+                            Margin = new Thickness(10, 0, 10, 10), 
+                            FontWeight = FontWeights.Normal, 
+                            TextAlignment = TextAlignment.Left, 
+                            Text = replacer[i],
+                            MaxLength = maxSize});
+                    else
+                        replace.stack.Children.Add(new TextBox { 
+                            Margin = new Thickness(10, 0, 10, 10), 
+                            FontWeight = FontWeights.Normal, 
+                            TextAlignment = TextAlignment.Left,
+                            MaxLength = maxSize});
+
+                    i++;
+                }
+
+                replace.ShowDialog();
+                this.IsEnabled = true;
+                if (replace.flag)
+                    replacer = replace.textValues;
+                else
+                {
+                    return;
+                }
+                
+                replace.Close();
+            }
+            
+            scriptRunning = true;
+            Thread.Sleep(100);
+            clean_Click(sender, e);
+            int timeOut = int.Parse(this.timeout.Text);
+            total_evaluation = true;
+            Thread t = new Thread(new ThreadStart(() => this.RunScript(c_list, timeOut)));
+            updateScreenButtons(state.runningScript);
+            t.Start();
+        }
+        private void RunScript(List<utils.command> command_list,int timeOut)
+        {
+            List<utils.test_results> _test = new List<utils.test_results>();
+            
+            utils.test_results commandOnTest = new utils.test_results();
+            for (int i = 0; i < command_list.Count; i++)
+            {                
+                if (!scriptRunning) return;
+
+                receive = "";
+
+                utils.command c = command_list[i];
+                htmlTextOutput.Add($"<p><b>[{i}] - {c.name}</b></p>");
+
+                for (int j = 0; j < tags.Count; j++)
+                {
+                    c.send = c.send.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));
+                    c.receive = c.receive.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));
+                }
+                commandOnTest.sent.raw = c.send.ToUpper();
+                commandOnTest.expectedAnswer = c.receive.ToUpper();
+                if (c.send_script == null) c.send_script = "";
+                
+                if (c.send_script.ToLower().IndexOf("js") < 0)
+                {
+                    if (commandOnTest.sent.raw.IndexOf("#CS#") > 0)
+                    {
+                        commandOnTest.sent.raw = commandOnTest.sent.raw
+                            .Replace("#CS#",
+                            c.checksum.calcCRC(commandOnTest.sent.raw.Substring
+                            (c.checksum.from, commandOnTest.sent.raw.IndexOf("#CS#") - c.checksum.from)));
+                    }
+                    commandOnTest.sent.processed = commandOnTest.sent.raw;
+                    byte[] b = utils.str2Hex(commandOnTest.sent.processed);
+                    receive = "";
+                    s0.Write(b, 0, b.Length);
+                    this.screenText.Dispatcher.Invoke((Action)(() => write2Screen(commandOnTest.sent.processed)));
+                    Thread.Sleep(timeOut);
+                    commandOnTest.realAnswer.raw = receive;
+                    if (c.receive_script == null) c.receive_script = "";
+                    if (Receive2Processed(c.receive_script, ref commandOnTest.realAnswer)) return;
+                    if (!String.IsNullOrWhiteSpace(commandOnTest.realAnswer.processed))
+                        this.Dispatcher.Invoke((Action)(() => read2Screen(commandOnTest.realAnswer.processed)));
+                }
+                else
+                {
+                    utils.ScriptAnswer sa = new utils.ScriptAnswer();
+                    sa.newRound = true;
+                    int round = 0;
+                    commandOnTest.realAnswer.raw = "";
+                    while (sa.newRound)
+                    {
+                        if (!scriptRunning) return;
+
+                        sa = utils.callScript(c.send_script, commandOnTest.sent.raw, commandOnTest.realAnswer.raw, round);
+
+                        if (!String.IsNullOrWhiteSpace(sa.error))
+                        {
+                            MessageBox.Show($"O script retornou o seguinte erro: {sa.error}");
+                            scriptRunning = false;
+                            this.screenText.Dispatcher.Invoke((Action)(() => updateScreenButtons(state.connected)));
+                            return;
+                        }
+                        else
+                        {
+                            commandOnTest.sent.processed = sa.processed_frame;
+                            if (!String.IsNullOrWhiteSpace(commandOnTest.sent.processed))
+                            {
+                                if (commandOnTest.sent.processed.IndexOf("#CS#") > 0)
+                                {
+                                    commandOnTest.sent.processed = commandOnTest.sent.processed
+                                        .Replace("#CS#",
+                                        c.checksum.calcCRC(commandOnTest.sent.processed.Substring
+                                        (c.checksum.from, commandOnTest.sent.processed.IndexOf("#CS#") - c.checksum.from)));
+                                }
+                                byte[] b = utils.str2Hex(commandOnTest.sent.processed);
+                                receive = "";
+                                s0.Write(b, 0, b.Length);
+                                this.screenText.Dispatcher.Invoke((Action)(() => write2Screen(commandOnTest.sent.processed)));
+                                Thread.Sleep(timeOut);
+                                commandOnTest.realAnswer.raw = receive;
+                                if (c.receive_script == null) c.receive_script = "";
+                                if (Receive2Processed(c.receive_script, ref commandOnTest.realAnswer)) return;
+                                if (!String.IsNullOrWhiteSpace(commandOnTest.realAnswer.processed))
+                                    this.Dispatcher.Invoke((Action)(() => read2Screen(commandOnTest.realAnswer.processed)));
+                                round++;
+                            }
+                        }
                     }
                 }
-                s0.Write(frame, 0, frame.Length);
-                write2Screen(str2Screen.ToUpper());
+                try
+                {
+                    commandOnTest.expectedAnswer = commandOnTest.expectedAnswer.Replace(" ", "");
+                    string ans = commandOnTest.realAnswer.processed.Replace(" ", "");
+                    for (int ch = 0; ch < commandOnTest.expectedAnswer.Length; ch++)
+                    {
+                        if (commandOnTest.expectedAnswer[ch] == 'X')
+                        {
+                            char[] array = commandOnTest.expectedAnswer.ToCharArray();
+                            array[ch] = ans[ch];
+                            commandOnTest.expectedAnswer = new string(array);
+                        }
+                    }
+                    if (commandOnTest.expectedAnswer.IndexOf("#CS#") > 0)
+                    {
+                        commandOnTest.expectedAnswer = commandOnTest.expectedAnswer
+                        .Replace("#CS#",
+                                 c.checksum.calcCRC(
+                                 commandOnTest.expectedAnswer.Substring(c.checksum.from,
+                                 commandOnTest.expectedAnswer.IndexOf("#CS#") - c.checksum.from))).ToUpper();
+                        Console.WriteLine(commandOnTest.expectedAnswer.Length);
 
+                    }
+                    commandOnTest.evaluation = commandOnTest.expectedAnswer.Replace(" ","").Equals(ans);
+                }
+                catch
+                {
+                    commandOnTest.evaluation = false;
+                }
+                
+                if (!String.IsNullOrWhiteSpace(commandOnTest.expectedAnswer)) total_evaluation &= commandOnTest.evaluation;
+                
+                _test.Add(commandOnTest);
+
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    if (total_evaluation)
+                        this.partial_result.Background = Brushes.Green;
+                    else
+                        this.partial_result.Background = Brushes.Red;
+                }));
             }
-      }
 
+            scriptRunning = false;
+            htmlTextOutput.Add("<br><br><h3>Análise automática dos resultados:</h3>");
+            htmlTextOutput.Add("<table  class=\"table table-striped\">");
+            htmlTextOutput.Add("<tr>");
+            htmlTextOutput.Add($"<th>ID</th>");
+            htmlTextOutput.Add($"<th>Resultado</th>");
+            htmlTextOutput.Add("</tr>");
+            int id = 0;
+            foreach (utils.test_results r in _test)
+            {
+                string eval = "";
+                if (r.expectedAnswer == "") eval = "Análise manual"; else eval = r.evaluation ? "Aprovado" : "Reprovado";
+                
+                htmlTextOutput.Add("<tr>");
+                htmlTextOutput.Add($"<td>{id}</td>");
+                htmlTextOutput.Add($"<td>{eval}</td>");
+                htmlTextOutput.Add("</tr>");
+                id++;
+            }
+            htmlTextOutput.Add("</table>");
+            this.screenText.Dispatcher.Invoke((Action)(() => updateScreenButtons(state.connected)));
+        }
+        
         private void write2Screen(string str2Screen)
         {
-            Run r = new Run($"\n\n[{DateTime.Now}] - Escrita: {str2Screen}");
-            lastRead = new DateTime();
-            r.Foreground = Brushes.Blue;
-            this.screenText.Inlines.Add(r);
-            htmlTextOutput.Add($"<br><br><font color=blue>{r.Text}</font>");
+            try
+            {
+                Run r = new Run($"\n\n[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}");
+                htmlTextOutput.Add($"<p style=\"color:#0000FF\">{r.Text}</style>");
+                r.Foreground = Brushes.Blue;
+                this.screenText.Inlines.Add(r);
+            }catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+            this.UpdateLayout();
 
+
+        }
+        private void read2Screen(string read2Screen)
+        {
+            Run r = new Run($"\n\n[{DateTime.Now.ToString()}] Leitura - {read2Screen}");
+
+            r.Foreground = Brushes.DarkRed;
+
+            this.screenText.Inlines.Add(r);
+
+            htmlTextOutput.Add($"<p style=\"color:#FF0000\">{r.Text}</style><br><br>");
 
         }
 
@@ -295,19 +590,22 @@ namespace Sociedade_Serial
                     sw.WriteLine("<html>");
                     sw.WriteLine("<head>");
                     sw.WriteLine("<title>Log do ensaio</title>");
+                    sw.WriteLine("<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css\">");
+                    sw.WriteLine("<style>*{font-family:'Arial' !important}</style>");
                     sw.WriteLine("</head>");
                     sw.WriteLine("<body>");
+                    sw.WriteLine("<div class=\"container\">");
                     sw.WriteLine("<h1>Sociedade Serial</h1>");
                     sw.WriteLine($"<b>Versão: </b>{App.ResourceAssembly.GetName().Version}<br>");
-                    sw.WriteLine($"<b>Executor: </b>{Environment.UserName}<br><br>");
+                    sw.WriteLine($"<b>Executor: </b>{Environment.UserName}<br>");
+                    sw.WriteLine($"<b>Data de emissão do relatório: </b>{DateTime.Now.ToString("dd/MM/yyyy")}<br>");
                     if (!this.tag.Text.Equals("")) sw.WriteLine("<b>TAG da banca de energia: </b>" + this.tag.Text + "<br>");
                     sw.WriteLine("<br>");
-                    sw.WriteLine("<font-size=32px>");
                     htmlTextOutput.ForEach(delegate (string element)
                     {
                         sw.WriteLine(element);
                     });                    
-                    sw.WriteLine("</font-size>");
+                    sw.WriteLine("</div>");
                     sw.WriteLine("</body>");
                     sw.WriteLine("</html>");
                 }
@@ -318,22 +616,308 @@ namespace Sociedade_Serial
 
         }
 
-
-        private void screenText_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void screenText_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-           while(this.screenText.Text.Length > 1E3)
+            while (this.screenText.Text.Length > 1.5e4)
             {
                 this.screenText.Inlines.Remove(this.screenText.Inlines.FirstInline);
             }
         }
 
-        private void screenText_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void updateScreenButtons(state state)
         {
-            while (this.screenText.Text.Length > 5e3)
+            switch (state)
             {
-                this.screenText.Inlines.Remove(this.screenText.Inlines.FirstInline);
+                case state.disconnected:
+                    this.disconect.IsEnabled = false;
+                    this.send.IsEnabled = false;
+                    this.buffer.IsEnabled = false;
+                    this.finish.IsEnabled = false;
+                    this.baudrate.IsEnabled = true;
+                    this.port.IsEnabled = true;
+                    this.stopBits.IsEnabled = true;
+                    this.parity.IsEnabled = true;
+                    this.flowControl.IsEnabled = true;
+                    this.tag.IsEnabled = true;
+                    this.dataBits.IsEnabled = true;
+                    this.conect.IsEnabled = true;
+                    this.test_time.IsEnabled = false;
+                    this.scriptAddress.IsEnabled = true;
+                    this.add.IsEnabled = true;
+                    this.edit.IsEnabled = true;
+                    this.remove.IsEnabled = true;
+                    this.Menu.IsEnabled = true;
+                    this.rts.IsEnabled = true;
+                    this.dtr.IsEnabled = true;
+                    break;
+                case state.connected:
+                    this.disconect.IsEnabled = true;
+                    this.conect.IsEnabled = false;
+                    this.send.IsEnabled = true;
+                    this.buffer.IsEnabled = true;
+                    this.finish.IsEnabled = false;
+                    this.baudrate.IsEnabled = false;
+                    this.port.IsEnabled = false;
+                    this.stopBits.IsEnabled = false;
+                    this.parity.IsEnabled = false;
+                    this.flowControl.IsEnabled = false;
+                    this.dataBits.IsEnabled = false;
+                    this.test_time.IsEnabled = true;
+                    this.scriptAddress.IsEnabled = true;
+                    this.add.IsEnabled = true;
+                    this.edit.IsEnabled = true;
+                    this.remove.IsEnabled = true;
+                    this.Menu.IsEnabled = true;
+                    this.rts.IsEnabled = false;
+                    this.dtr.IsEnabled = false;
+                    break;
+                case state.sendingBuffer:
+                    this.finish.IsEnabled = true;
+                    this.send.IsEnabled = false;
+                    this.buffer.IsEnabled = false;
+                    this.test_time.IsEnabled = false;
+                    this.scriptAddress.IsEnabled = false;
+                    this.add.IsEnabled = false;
+                    this.edit.IsEnabled = false;
+                    this.remove.IsEnabled = false;
+                    this.Menu.IsEnabled = false;
+                    break;
+                case state.runningScript:
+                    this.finish.IsEnabled = true;
+                    this.send.IsEnabled = false;
+                    this.buffer.IsEnabled = false;
+                    this.test_time.IsEnabled = false;
+                    this.scriptAddress.IsEnabled = false;
+                    this.add.IsEnabled = false;
+                    this.edit.IsEnabled = false;
+                    this.remove.IsEnabled = false;
+                    this.Menu.IsEnabled = false;
+                    break;
+
+            }
+        }
+
+        private void Port_GotMouseCapture(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            this.port.ItemsSource = SerialPort.GetPortNames();
+        }
+
+        private void GridViewColumn_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            MessageBox.Show("OK");
+        }
+
+        private void selectAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.commands.SelectedItems.Count != this.commands.Items.Count)
+                this.commands.SelectAll();
+            else
+                this.commands.UnselectAll();
+            
+        }
+
+        private void edit_Click(object sender, RoutedEventArgs e)
+        {
+            
+            int index = this.commands.SelectedIndex;
+
+            if (index < 0) return;
+
+            this.IsEnabled = false;
+
+            commandWindow = new commandWindow(script.commands[index]);
+            
+            commandWindow.ShowDialog();
+
+
+            if (commandWindow.addCommand)
+            {
+                try
+                {
+                    utils.command c = createCommand();
+                    script.commands[index] = c;
+                    this.commands.Items[index] = c.name;
+                }
+                catch
+                {
+                    MessageBox.Show("Não foram fornecidas todas as informações necessárias", "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    edit_Click(sender, e);
+                }
+                
+            }
+            this.IsEnabled = true;
+        }
+
+        private void add_Click(object sender, RoutedEventArgs e)
+        {
+            
+            this.IsEnabled = false;
+            if (commandWindow is null) commandWindow = new commandWindow(); else commandWindow = new commandWindow(commandWindow);
+            commandWindow.ShowDialog();
+
+
+            if (commandWindow.addCommand)
+            {
+
+                try
+                {
+                    utils.command c = createCommand();
+                    script.commands.Add(c);
+                    this.commands.Items.Add(c.name);                    
+                }
+                catch
+                {
+                    MessageBox.Show("Não foram fornecidas todas as informações necessárias","Erro",MessageBoxButton.OK,MessageBoxImage.Warning);
+                    add_Click(sender, e);
+                }
+                
+            }
+            this.IsEnabled = true;
+
+        }
+
+        private void script_save_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog saveFile = new Microsoft.Win32.SaveFileDialog();
+            saveFile.Filter = "Arquivo json|*.json";
+
+            if (saveFile.ShowDialog() == true)
+            {
+                try
+                {
+                    utils.saveScript(saveFile.FileName, script);
+                }catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
+
+
+        }
+
+        private void remove_Click(object sender, RoutedEventArgs e)
+        {
+            while (this.commands.SelectedIndex>=0)
+            {
+                script.commands.RemoveAt(this.commands.SelectedIndex);
+                this.commands.Items.RemoveAt(this.commands.SelectedIndex);
+            }
+        }
+
+        private utils.command createCommand()
+        {
+            utils.command c = new utils.command();
+            if (commandWindow.name.Text.Equals("") || commandWindow.send.Text.Equals("")) throw new Exception();
+            c.name = commandWindow.name.Text;
+            c.send = commandWindow.send.Text;
+            c.receive = commandWindow.receive.Text;
+            c.receive_script = commandWindow.receive_external_script.Text;
+            c.send_script = commandWindow.send_external_script.Text;
+
+            c.checksum = new crc();
+            c.checksum.algorithm = commandWindow.algorithm.SelectedItem.ToString();
+            if (c.checksum.algorithm.Equals("CRC"))
+            {
+                c.checksum.initialValue = UInt64.Parse(commandWindow.initialValue.Text, System.Globalization.NumberStyles.HexNumber);
+                c.checksum.finalXorVal = UInt64.Parse(commandWindow.finalXorVal.Text, System.Globalization.NumberStyles.HexNumber);
+                c.checksum.polynominal = UInt64.Parse(commandWindow.polynominal.Text, System.Globalization.NumberStyles.HexNumber);
+                c.checksum.inputReflected = commandWindow.inputReflected.IsChecked == true;
+                c.checksum.resultReflected = commandWindow.outputReflected.IsChecked == true;
+                c.checksum.from = int.Parse(commandWindow.from.Text, System.Globalization.NumberStyles.HexNumber);
+                c.checksum.lowBitFirst = commandWindow.lowBitFirst.IsChecked == true;
+                if (commandWindow.w8.IsChecked == true) c.checksum.width = 8;
+                else if (commandWindow.w16.IsChecked == true) c.checksum.width = 16;
+                else if (commandWindow.w32.IsChecked == true) c.checksum.width = 32;
+                else if (commandWindow.w64.IsChecked == true) c.checksum.width = 64;
+            }
+            else if (c.checksum.algorithm.Equals("Checksum"))
+            {
+                c.checksum.initialValue = 0;
+                c.checksum.finalXorVal = 0;
+                c.checksum.polynominal = 0;
+                c.checksum.inputReflected = false;
+                c.checksum.resultReflected = false;
+                c.checksum.from = int.Parse(commandWindow.from.Text, System.Globalization.NumberStyles.HexNumber);
+                c.checksum.lowBitFirst = commandWindow.lowBitFirst.IsChecked == true;
+                if (commandWindow.w8.IsChecked == true) c.checksum.width = 8;
+                else if (commandWindow.w16.IsChecked == true) c.checksum.width = 16;
+                else if (commandWindow.w32.IsChecked == true) c.checksum.width = 32;
+                else if (commandWindow.w64.IsChecked == true) c.checksum.width = 64;
+            }
+            return c;
+        }
+    
+        private bool Receive2Processed(string scriptName, ref utils.testFrames tf)
+        {
+            
+            if (scriptName.IndexOf("js") < 0)
+            {
+                tf.processed = tf.raw;
+
+
+            }
+            else
+            {
+                utils.ScriptAnswer sa = new utils.ScriptAnswer();
+
+
+                try
+                {
+                    sa = utils.callScript(scriptName, "", tf.raw, 0);
+
+                    if (!String.IsNullOrWhiteSpace(sa.error))
+                    {
+                        MessageBox.Show($"O script retornou o seguinte erro: {sa.error}");
+                        scriptRunning = false;
+                        this.screenText.Dispatcher.Invoke((Action)(() => updateScreenButtons(state.connected)));
+                        return true;
+                    }
+                    else
+                    {
+                        tf.processed = sa.processed_frame;
+                    }
+                }
+                catch (Exception exce)
+                {
+                    MessageBox.Show(exce.Message, "Error");
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        private void save_log_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog saveFile = new Microsoft.Win32.SaveFileDialog();
+            saveFile.Filter = "Arquivo html|*.html";
+            if (saveFile.ShowDialog() == true)
+            {
+                string fileName = saveFile.FileName;
+                using (System.IO.StreamWriter sw = new System.IO.StreamWriter($@"{fileName}"))
+                {
+                    sw.WriteLine("<html>");
+                    sw.WriteLine("<head>");
+                    sw.WriteLine("<title>Log do ensaio</title>");
+                    sw.WriteLine("<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css\">");
+                    sw.WriteLine("<style>*{font-family:'Arial' !important}</style>");
+                    sw.WriteLine("</head>");
+                    sw.WriteLine("<body>");
+                    sw.WriteLine("<div class=\"container\">");
+                    sw.WriteLine("<h1>Sociedade Serial</h1>");
+                    sw.WriteLine($"<b>Versão: </b>{App.ResourceAssembly.GetName().Version}<br>");
+                    sw.WriteLine($"<b>Executor: </b>{Environment.UserName}<br>");
+                    sw.WriteLine($"<b>Data de emissão do relatório: </b>{DateTime.Now.ToString("dd/MM/yyyy")}<br>");
+                    if (!this.tag.Text.Equals("")) sw.WriteLine("<b>TAG da banca de energia: </b>" + this.tag.Text + "<br>");
+                    sw.WriteLine("<br>");
+                    sw.Write(this.screenText.Text.Replace("\n","<br>"));
+                    sw.WriteLine("</div>");
+                    sw.WriteLine("</body>");
+                    sw.WriteLine("</html>");
+                }
             }
         }
     }
-    
+
 }

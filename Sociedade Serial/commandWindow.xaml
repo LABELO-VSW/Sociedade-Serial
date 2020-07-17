@@ -1,0 +1,92 @@
+﻿<Window x:Class="Sociedade_Serial.commandWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Sociedade_Serial"
+        mc:Ignorable="d"
+        Title="Novo comando" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"  WindowStyle="ToolWindow"
+        Width="840px">
+    <Grid>
+        <Border BorderBrush="LightGray" BorderThickness="2"/>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel Width="800px">
+                <Label Content="Nome do comando:" Margin="0"/>  
+                <TextBox Name="name" Margin="10,0,10,10" TextAlignment="Left" />
+                <Label Content="Frame de envio:" Margin="0" Name="sen_lb"/>
+                <TextBox 
+                    Name="send" 
+                    Margin="10,0,10,10" 
+                    TextAlignment="Left" 
+                    VerticalContentAlignment="Top"
+                    TextWrapping="Wrap"
+                    Height="60px"
+                    VerticalScrollBarVisibility="Auto"
+                    KeyUp="hex_KeyUp"
+                    PreviewKeyDown="hex_PreviewKeyDown"
+                    KeyDown="hex_KeyDown"
+                 />
+                <Label Content="Resposta esperada:" Margin="0" Name="rec_lb"/>
+                <TextBox 
+                    Name="receive" 
+                    Margin="10,0,10,10" 
+                    TextAlignment="Left" 
+                    VerticalContentAlignment="Top"
+                    TextWrapping="Wrap"
+                    Height="60px"
+                    VerticalScrollBarVisibility="Auto"
+                    KeyUp="hex_KeyUp"
+                    PreviewKeyDown="hex_PreviewKeyDown"
+                    KeyDown="hex_KeyDown"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0">
+                    <Label Content="Script para tratamento da resposta:"/>
+                    <TextBox Name="receive_external_script" Width="200px"></TextBox>
+                    <Label Content="Script para envio:"/>
+                    <TextBox Name="send_external_script" Width="200px"></TextBox>
+                </StackPanel>
+                <Label Content="Tamanho:" Margin="0"/>
+                <StackPanel Orientation="Horizontal" Margin="0,10">
+                    <RadioButton GroupName="width" Name="w8"  Content="8" Margin="10"/>
+                    <RadioButton GroupName="width" Name="w16" Content="16" Margin="10"/>
+                    <RadioButton GroupName="width" Name="w32" Content="32" Margin="10"/>
+                    <RadioButton GroupName="width" Name="w64" Content="64" Margin="10"/>
+                    <Label Content="Algoritmo do CRC:" Margin="0"/>
+                    <ComboBox Name="algorithm" Width="100px" SelectionChanged="algorithm_SelectionChanged" Margin="0"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,10">
+                    <Label Content="Offset:"/>
+                    <TextBox Name="from" Width="25px"/>
+
+                    <Label Content="Polinômio:"/>
+                    <TextBox Name="polynominal" Width="100px"/>
+
+
+                    <Label Content="Valor inicial:"/>
+                    <TextBox Name="initialValue" Width="100px"/>
+
+                    <Label Content="XOR Final:"/>
+                    <TextBox Name="finalXorVal" Width="100px"/>
+
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,10">
+                    <CheckBox Name="inputReflected" Content="Entrada refletida" Margin="10"/>
+                    <CheckBox Name="outputReflected" Content="Saída refletida" Margin="10"/>
+                    <CheckBox Name="lowBitFirst" Content="LSB primeiro" Margin="10"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,10" HorizontalAlignment="Left">
+                    <Button Name="ok" Content="OK" Margin="10" Height="30" Width="100" Click="ok_Click" Foreground="Black"/>
+                    <Button Name="cancel" Content="Cancelar" Margin="10" Height="30" Width="100" Click="cancel_Click" Foreground="Black"/>
+                </StackPanel>
+                <Label Margin="5">Instruções de uso:</Label>
+                <Label Margin="5" FontSize="8pt" Padding="0">#CS#: indica onde inserir o checksum</Label>
+                <Label Margin="5" FontSize="8pt" Padding="0">#XXX#: qualquer valor dinâmico, onde XXX é o nome da variável escolhida pelo usuário</Label>
+                <Label Margin="5" FontSize="8pt" Padding="0">XX: utilizar esse valor para bytes que devem ser ignorados na análise da resposta</Label>
+                <Label Margin="5" FontSize="8pt" Padding="0">Separar os bytes do frame por espaço</Label>
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+    <Window.Resources>
+        <ResourceDictionary Source="/styles.xaml"/>
+    </Window.Resources>
+</Window>
