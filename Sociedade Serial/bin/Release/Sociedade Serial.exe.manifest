@@ -427,14 +427,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Sociedade Serial.exe" size="309720">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Sociedade Serial.exe" size="307672">
       <assemblyIdentity name="Sociedade Serial" version="2.1.0.3" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>C/V0voDa/Kn+nC7kYeg3mlzhn7+U2sCFweYc9fNF8EE=</dsig:DigestValue>
+        <dsig:DigestValue>sIIpuNTwoK2xkcHQ21V6K1++Z5M5zETj/wJJnQOt128=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
