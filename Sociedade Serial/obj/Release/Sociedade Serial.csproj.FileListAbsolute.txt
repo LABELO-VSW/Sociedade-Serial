@@ -223,3 +223,4 @@ C:\Users\10086519\Documents\Sociedade-Serial-C#\Sociedade Serial\obj\Release\Soc
 C:\Users\10086519\Documents\Sociedade-Serial-C#\Sociedade Serial\obj\Release\Sociedade Serial.pdb
 C:\Users\10086519\Documents\Sociedade-Serial-C#\Sociedade Serial\obj\Release\Themes\Generic.baml
 C:\Users\10086519\Documents\Sociedade-Serial-C#\Sociedade Serial\obj\Release\GeneratedInternalTypeHelper.g.cs
+C:\Users\10086519\Documents\Sociedade-Serial-C#\Sociedade Serial\obj\Release\Sociedade Serial.csproj.CoreCompileInputs.cache

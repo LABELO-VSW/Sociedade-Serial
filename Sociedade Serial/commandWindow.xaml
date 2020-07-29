@@ -79,9 +79,8 @@
                 </StackPanel>
                 <Label Margin="5">Instruções de uso:</Label>
                 <Label Margin="5" FontSize="8pt" Padding="0">#CS#: indica onde inserir o checksum</Label>
-                <Label Margin="5" FontSize="8pt" Padding="0">#XXX#: qualquer valor dinâmico, onde XXX é o nome da variável escolhida pelo usuário</Label>
+                <Label Margin="5" FontSize="8pt" Padding="0">#XXX, T#: qualquer valor dinâmico, onde XXX é o nome da variável escolhida pelo usuário e T o número de bytes</Label>
                 <Label Margin="5" FontSize="8pt" Padding="0">XX: utilizar esse valor para bytes que devem ser ignorados na análise da resposta</Label>
-                <Label Margin="5" FontSize="8pt" Padding="0">Separar os bytes do frame por espaço</Label>
             </StackPanel>
         </ScrollViewer>
 

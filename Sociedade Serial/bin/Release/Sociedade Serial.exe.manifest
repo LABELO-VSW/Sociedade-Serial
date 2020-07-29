@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <asmv1:assembly xsi:schemaLocation="urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd" manifestVersion="1.0" xmlns:asmv1="urn:schemas-microsoft-com:asm.v1" xmlns="urn:schemas-microsoft-com:asm.v2" xmlns:asmv2="urn:schemas-microsoft-com:asm.v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:co.v1="urn:schemas-microsoft-com:clickonce.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:co.v2="urn:schemas-microsoft-com:clickonce.v2">
-  <asmv1:assemblyIdentity name="Sociedade Serial.exe" version="2.0.0.4" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
+  <asmv1:assemblyIdentity name="Sociedade Serial.exe" version="2.1.0.7" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
   <description asmv2:iconFile="icon.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="Sociedade Serial" version="2.0.0.3" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="Sociedade Serial" version="2.1.0.3" language="neutral" processorArchitecture="msil" />
     <commandLine file="Sociedade Serial.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -428,13 +428,13 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Sociedade Serial.exe" size="309720">
-      <assemblyIdentity name="Sociedade Serial" version="2.0.0.3" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="Sociedade Serial" version="2.1.0.3" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>DUVynQ+3m7b7kKgzbI6aujv9uO6MQKI8Yh665ZLdnOE=</dsig:DigestValue>
+        <dsig:DigestValue>C/V0voDa/Kn+nC7kYeg3mlzhn7+U2sCFweYc9fNF8EE=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
