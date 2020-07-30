@@ -1,7 +1,6 @@
 ﻿
 using System.IO.Ports;
 using System.IO;
-using Json.Net;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Diagnostics;
