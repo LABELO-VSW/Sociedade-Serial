@@ -9,7 +9,7 @@
         Width="840px">
     <Grid>
         <Border BorderBrush="LightGray" BorderThickness="2"/>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <StackPanel Width="800px">
                 <Label Content="Nome do comando:" Margin="0"/>  
                 <TextBox Name="name" Margin="10,0,10,10" TextAlignment="Left" />
@@ -37,15 +37,29 @@
                     VerticalScrollBarVisibility="Auto"
                     KeyUp="hex_KeyUp"
                     PreviewKeyDown="hex_PreviewKeyDown"
-                    KeyDown="hex_KeyDown"/>
-                <StackPanel Orientation="Horizontal" Margin="0,0">
-                    <Label Content="Script para tratamento da resposta:"/>
-                    <TextBox Name="receive_external_script" Width="200px"></TextBox>
-                    <Label Content="Script para envio:"/>
-                    <TextBox Name="send_external_script" Width="200px"></TextBox>
+                    KeyDown="hex_KeyDown"/>                
+                <Label Margin="0">Script de Leitura:</Label>                
+                <StackPanel Orientation="Horizontal" Margin="0,-5,0,0">
+                    <Button Name="Receive_Script_Button" Click="Get_Script_Click" ToolTip="Selecionar Script de tratamento de resposta" Foreground="Black" Width="120px">
+                        Escolher Arquivo
+                    </Button>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"  Width="350px" Name="receive_script_scroll">
+                        <Label Name="receive_external_script" Margin="-5,0">Nenhum Arquivo Selecionado</Label>
+                    </ScrollViewer>
                 </StackPanel>
+                <Label Margin="0">Script de Envio:</Label>
+                <StackPanel Orientation="Horizontal" Margin="0,-5,0,10">
+                    <Button Name="Send_Script_Button" Click="Get_Script_Click" ToolTip="Selecionar Script de tratamento de envio" Foreground="Black" Width="120px">
+                        Escolher Arquivo
+                    </Button>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"  Width="350px" Name="send_script_scroll">
+                        <Label Name="send_external_script" Margin="-5,0">Nenhum Arquivo Selecionado</Label>
+                    </ScrollViewer>
+                </StackPanel>
+
+                                
                 <Label Content="Tamanho:" Margin="0"/>
-                <StackPanel Orientation="Horizontal" Margin="0,10">
+                <StackPanel Orientation="Horizontal" Margin="0,0">
                     <RadioButton GroupName="width" Name="w8"  Content="8" Margin="10"/>
                     <RadioButton GroupName="width" Name="w16" Content="16" Margin="10"/>
                     <RadioButton GroupName="width" Name="w32" Content="32" Margin="10"/>

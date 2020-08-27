@@ -105,8 +105,18 @@ namespace Sociedade_Serial
         public static ScriptAnswer callScript(string script_name, string raw_send, string raw_answer, int round)
         {
             Process proc = new Process();
-            script_name = $"T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts\\{script_name}";
+            
+            if (script_name.IndexOf("\\") < 0 && script_name.IndexOf("/") < 0) script_name = $"T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts\\{script_name}";
 
+            if (!File.Exists(script_name)){
+                return new ScriptAnswer()
+                {
+                    error = $"Script {script_name} não encontrado!",
+                    newRound = false,
+                    processed_frame = ""
+                };
+
+            }
             proc.StartInfo = new ProcessStartInfo
             {
                 FileName = "node.exe",

@@ -64,8 +64,8 @@ namespace Sociedade_Serial
             this.outputReflected.IsChecked = c.outputReflected.IsChecked;
             this.inputReflected.IsChecked = c.inputReflected.IsChecked;
             this.lowBitFirst.IsChecked = c.lowBitFirst.IsChecked;
-            this.send_external_script.Text = c.send_external_script.Text;
-            this.receive_external_script.Text = c.receive_external_script.Text;
+            this.send_external_script.Content = c.send_external_script.Content;
+            this.receive_external_script.Content = c.receive_external_script.Content;
 
             this.w8.IsChecked = c.w8.IsChecked;
             this.w16.IsChecked = c.w16.IsChecked;
@@ -97,8 +97,14 @@ namespace Sociedade_Serial
             this.outputReflected.IsChecked = c.checksum.resultReflected;
             this.inputReflected.IsChecked = c.checksum.inputReflected;
             this.lowBitFirst.IsChecked = c.checksum.lowBitFirst;
-            this.send_external_script.Text = c.send_script;
-            this.receive_external_script.Text = c.receive_script;
+            if (c.send_script != "")
+                this.send_external_script.Content = c.send_script;
+            else
+                this.send_external_script.Content = "Nenhum Arquivo Selecionado";
+            if (c.receive_script != "")
+                this.receive_external_script.Content = c.receive_script;
+            else
+                this.receive_external_script.Content = "Nenhum Arquivo Selecionado";
 
 
             switch (c.checksum.width)
@@ -273,11 +279,6 @@ namespace Sociedade_Serial
             TextBox tb = (TextBox)sender;
             int p = tb.SelectionStart;
 
-            if (tb.Text.Length > 0 && (e.Key == Key.V) && ModifierKeys.Control.HasFlag(ModifierKeys.Control))
-            {
-                e.Handled = true;
-                return;
-            }
 
             isFlag = false;
             for (int i = 0; i < p; i++)
@@ -297,6 +298,12 @@ namespace Sociedade_Serial
                 }else if (e.Key == Key.Back && p>0)
                 {
                     if (tb.Text[p - 1] == ' ') tb.SelectionStart--;
+                }
+
+                if (tb.Text.Length > 0 && (e.Key == Key.V) && ModifierKeys.Control.HasFlag(ModifierKeys.Control))
+                {
+                    e.Handled = true;
+                    return;
                 }
             }
 
@@ -424,6 +431,46 @@ namespace Sociedade_Serial
             }
             ((TextBox)sender).IsEnabled = true;
 
+        }
+
+        private void Get_Script_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog newScript = new Microsoft.Win32.OpenFileDialog();
+            newScript.Filter = "Script de tratamento|*.js";
+            newScript.InitialDirectory = "T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts";
+            if (newScript.ShowDialog() == true)
+            {
+                try
+                {
+                    if (((Button)sender).Name != "Send_Script_Button")
+                    {
+                        receive_external_script.Content = newScript.FileName;
+                        receive_script_scroll.ScrollToRightEnd();
+                    }
+                    else
+                    {
+                        send_external_script.Content = newScript.FileName;
+                        send_script_scroll.ScrollToRightEnd();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+            }
+            else
+            {
+                
+                if (((Button)sender).Name != "Send_Script_Button")
+                {
+                    receive_external_script.Content = "Nenhum Arquivo Selecionado";
+                }
+                else
+                {
+                    send_external_script.Content = "Nenhum Arquivo Selecionado";
+                }
+            }
         }
     }
 }

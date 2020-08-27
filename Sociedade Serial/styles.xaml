@@ -81,6 +81,7 @@
         <Setter Property="BorderThickness" Value="1"/>
 
     </Style>
+  
 
     <Style TargetType="TabItem">
         <Setter Property="Height" Value="30px"/>

@@ -74,9 +74,11 @@ namespace Sociedade_Serial
             buffer_timer = new System.Timers.Timer() { Interval = 1};
             buffer_timer.Elapsed += Buffer_timer_Elapsed;
             script.commands = new List<utils.command>();
+            
 
         }
 
+        // Configure buttons
         private void disconect_Click(object sender, RoutedEventArgs e)
         {
 
@@ -92,6 +94,7 @@ namespace Sociedade_Serial
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                updateScreenButtons(state.disconnected);
             }
 
         }
@@ -125,6 +128,7 @@ namespace Sociedade_Serial
 
         }
 
+        // Port Event
         private void S0_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             if (scriptRunning)
@@ -160,7 +164,9 @@ namespace Sociedade_Serial
 
                     r.Foreground = Brushes.DarkRed;
 
-                    this.screenText.Inlines.Add(r);
+                    Paragraph p = new Paragraph();
+                    p.Inlines.Add(r);
+                    this.screenText.Document.Blocks.Add(p);
 
                     if (!this.buffer.IsEnabled) htmlTextOutput.Add($"<font color=\"#FF0000\">{r.Text.Replace("\n","<br>")}</font>"); 
 
@@ -171,6 +177,7 @@ namespace Sociedade_Serial
           
         }
 
+        //Communication Buttons
         private void scriptAddress_Click(object sender, RoutedEventArgs e)
         {
             
@@ -266,7 +273,8 @@ namespace Sociedade_Serial
 
         private void clean_Click(object sender, RoutedEventArgs e)
         {
-            this.screenText.Text = "";
+            this.screenText.Document.Blocks.Clear();
+
             htmlTextOutput.Clear();
         }
 
@@ -292,6 +300,7 @@ namespace Sociedade_Serial
             if (this.commands.SelectedItems.Count == 0) return;
 
             List<utils.command> c_list = new List<utils.command>();
+            List<string> ActiveTags = new List<string>();
 
             for (int i =0; i < this.commands.SelectedItems.Count; i++)
             {
@@ -306,8 +315,18 @@ namespace Sociedade_Serial
                         int new_id = flag.IndexOf('#');
                         flag = flag.Substring(0, new_id);
                         id += new_id+1;
-                        if (!tags.Contains(flag) && flag!="CS") tags.Add(flag);
 
+                        if (flag!= "CS")
+                        {
+                            if (!tags.Contains(flag))
+                            {
+                                ActiveTags.Add(flag);
+                                tags.Add(flag);
+                            }else
+                            {
+                                ActiveTags.Add(flag);
+                            }
+                        }
 
                     }
                     else if (c.send[id].Equals(' ')) c.send.Remove(id, 1);
@@ -321,48 +340,67 @@ namespace Sociedade_Serial
                         int new_id = flag.IndexOf('#');
                         flag = flag.Substring(0, new_id);
                         id += new_id+1;
-                        if (!tags.Contains(flag) && flag != "CS") tags.Add(flag);
-                    }else if (c.receive[id].Equals(' ')) c.receive.Remove(id, 1);
+                        if (flag != "CS")
+                        {
+                            if (!tags.Contains(flag))
+                            {
+                                ActiveTags.Add(flag);
+                                tags.Add(flag);
+                            }
+                            else
+                            {
+                                ActiveTags.Add(flag);
+                            }
+                        }
+                    }
+                    else if (c.receive[id].Equals(' ')) c.receive.Remove(id, 1);
                 }
                 c_list.Add(c);
             }
 
-            if (tags.Count > 0)
+            if (ActiveTags.Count > 0)
             {
                 int i = 0;
                 this.IsEnabled = false;
                 ReplaceStrings replace = new ReplaceStrings();
-                
+
                 foreach (string str in tags)
                 {
-                    string TAG = "";
-                    int maxSize = 256;
-                    if (str.IndexOf(",") != -1)
-                    {
-                        int len = str.IndexOf(",");
-                        Tag = str.Substring(0, len).Replace("#","");
-                        maxSize = int.Parse(str.Substring(len + 1).Replace("#", "").Trim())*2;
-                    }
-                    else
-                    {
-                        Tag = str.Replace("#", "");
-                    }
-                    replace.stack.Children.Add(new Label { Content = Tag, Margin = new Thickness(10, 0, 10, 0), FontWeight = FontWeights.Normal });
-                    if (i<replacer.Count)
-                        replace.stack.Children.Add(new TextBox { 
-                            Margin = new Thickness(10, 0, 10, 10), 
-                            FontWeight = FontWeights.Normal, 
-                            TextAlignment = TextAlignment.Left, 
-                            Text = replacer[i],
-                            MaxLength = maxSize});
-                    else
-                        replace.stack.Children.Add(new TextBox { 
-                            Margin = new Thickness(10, 0, 10, 10), 
-                            FontWeight = FontWeights.Normal, 
-                            TextAlignment = TextAlignment.Left,
-                            MaxLength = maxSize});
+                    if (ActiveTags.Contains(str)) 
+                    { 
+                         string TAG = "";
+                        int maxSize = 256;
+                        if (str.IndexOf(",") != -1)
+                        {
+                            int len = str.IndexOf(",");
+                            Tag = str.Substring(0, len).Replace("#", "");
+                            maxSize = int.Parse(str.Substring(len + 1).Replace("#", "").Trim()) * 2;
+                        }
+                        else
+                        {
+                            Tag = str.Replace("#", "");
+                        }
+                        replace.stack.Children.Add(new Label { Content = Tag, Margin = new Thickness(10, 0, 10, 0), FontWeight = FontWeights.Normal });
+                        if (i < replacer.Count)
+                            replace.stack.Children.Add(new TextBox
+                            {
+                                Margin = new Thickness(10, 0, 10, 10),
+                                FontWeight = FontWeights.Normal,
+                                TextAlignment = TextAlignment.Left,
+                                Text = replacer[i],
+                                MaxLength = maxSize
+                            });
+                        else
+                            replace.stack.Children.Add(new TextBox
+                            {
+                                Margin = new Thickness(10, 0, 10, 10),
+                                FontWeight = FontWeights.Normal,
+                                TextAlignment = TextAlignment.Left,
+                                MaxLength = maxSize
+                            });
 
-                    i++;
+                        i++;
+                    }
                 }
 
                 replace.ShowDialog();
@@ -400,10 +438,10 @@ namespace Sociedade_Serial
                 utils.command c = command_list[i];
                 htmlTextOutput.Add($"<p><b>[{i}] - {c.name}</b></p>");
 
-                for (int j = 0; j < tags.Count; j++)
+                for (int j = 0; j < replacer.Count; j++)
                 {
                     c.send = c.send.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));
-                    c.receive = c.receive.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));
+                    c.receive = c.receive.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));  
                 }
                 commandOnTest.sent.raw = c.send.ToUpper();
                 commandOnTest.expectedAnswer = c.receive.ToUpper();
@@ -444,7 +482,7 @@ namespace Sociedade_Serial
 
                         if (!String.IsNullOrWhiteSpace(sa.error))
                         {
-                            MessageBox.Show($"O script retornou o seguinte erro: {sa.error}");
+                            MessageBox.Show($"{sa.error}","Error ao executar o script",MessageBoxButton.OK,MessageBoxImage.Error);
                             scriptRunning = false;
                             this.screenText.Dispatcher.Invoke((Action)(() => updateScreenButtons(state.connected)));
                             return;
@@ -479,7 +517,11 @@ namespace Sociedade_Serial
                 try
                 {
                     commandOnTest.expectedAnswer = commandOnTest.expectedAnswer.Replace(" ", "");
-                    string ans = commandOnTest.realAnswer.processed.Replace(" ", "");
+                    string ans = "";
+                    if (commandOnTest.realAnswer.processed != null)
+                    {
+                        ans = commandOnTest.realAnswer.processed.Replace(" ", "");
+                    }
                     for (int ch = 0; ch < commandOnTest.expectedAnswer.Length; ch++)
                     {
                         if (commandOnTest.expectedAnswer[ch] == 'X')
@@ -546,10 +588,21 @@ namespace Sociedade_Serial
         {
             try
             {
-                Run r = new Run($"\n\n[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}");
+                Run r;
+                if (this.screenText.Document.Blocks.Count == 1)
+                {
+                    r =  new Run($"[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}");
+                }
+                else
+                {
+                    r =  new Run($"\n[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}");
+                }
+                
                 htmlTextOutput.Add($"<p style=\"color:#0000FF\">{r.Text}</style>");
                 r.Foreground = Brushes.Blue;
-                this.screenText.Inlines.Add(r);
+                Paragraph p = new Paragraph();
+                p.Inlines.Add(r);
+                this.screenText.Document.Blocks.Add(p);
             }catch(Exception e)
             {
                 MessageBox.Show(e.Message);
@@ -560,12 +613,21 @@ namespace Sociedade_Serial
         }
         private void read2Screen(string read2Screen)
         {
-            Run r = new Run($"\n\n[{DateTime.Now.ToString()}] Leitura - {read2Screen}");
+            Run r;
+            if (this.screenText.Document.Blocks.Count == 1)
+            {
+                r = new Run($"[{DateTime.Now.ToString()}] Leitura - {read2Screen}");
+            }
+            else
+            {
+                r = new Run($"\n[{DateTime.Now.ToString()}] Leitura - {read2Screen}");
+            }
+            
 
             r.Foreground = Brushes.DarkRed;
-
-            this.screenText.Inlines.Add(r);
-
+            Paragraph p = new Paragraph();
+            p.Inlines.Add(r);
+            this.screenText.Document.Blocks.Add(p);
             htmlTextOutput.Add($"<p style=\"color:#FF0000\">{r.Text}</style><br><br>");
 
         }
@@ -618,9 +680,9 @@ namespace Sociedade_Serial
 
         private void screenText_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            while (this.screenText.Text.Length > 1.5e4)
+            while (this.screenText.Document.Blocks.Count > 1000)
             {
-                this.screenText.Inlines.Remove(this.screenText.Inlines.FirstInline);
+                this.screenText.Document.Blocks.Remove(this.screenText.Document.Blocks.FirstBlock);
             }
         }
 
@@ -812,8 +874,14 @@ namespace Sociedade_Serial
             c.name = commandWindow.name.Text;
             c.send = commandWindow.send.Text;
             c.receive = commandWindow.receive.Text;
-            c.receive_script = commandWindow.receive_external_script.Text;
-            c.send_script = commandWindow.send_external_script.Text;
+            if (commandWindow.receive_external_script.Content.ToString() != "Nenhum Arquivo Selecionado")
+                c.receive_script = commandWindow.receive_external_script.Content.ToString();
+            else
+                c.receive_script = "";
+            if (commandWindow.send_external_script.Content.ToString() != "Nenhum Arquivo Selecionado")
+                c.send_script = commandWindow.send_external_script.Content.ToString();
+            else
+                c.send_script = "";
 
             c.checksum = new crc();
             c.checksum.algorithm = commandWindow.algorithm.SelectedItem.ToString();
@@ -891,6 +959,8 @@ namespace Sociedade_Serial
         private void save_log_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.SaveFileDialog saveFile = new Microsoft.Win32.SaveFileDialog();
+            TextRange tr = new TextRange(this.screenText.Document.ContentStart,
+                                         this.screenText.Document.ContentEnd);
             saveFile.Filter = "Arquivo html|*.html";
             if (saveFile.ShowDialog() == true)
             {
@@ -911,7 +981,7 @@ namespace Sociedade_Serial
                     sw.WriteLine($"<b>Data de emissão do relatório: </b>{DateTime.Now.ToString("dd/MM/yyyy")}<br>");
                     if (!this.tag.Text.Equals("")) sw.WriteLine("<b>TAG da banca de energia: </b>" + this.tag.Text + "<br>");
                     sw.WriteLine("<br>");
-                    sw.Write(this.screenText.Text.Replace("\n","<br>"));
+                    sw.WriteLine(tr.Text.Replace("\n","<br>"));
                     sw.WriteLine("</div>");
                     sw.WriteLine("</body>");
                     sw.WriteLine("</html>");
