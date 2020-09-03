@@ -15,6 +15,11 @@ Aplicação foi desenvolvida em C# com projeto de renderização utilizando Wind
  - Modificado o elemento no qual são apresentados os resultados parciais para que possa-se copiar os dados;
  - Modificada a forma como inserir um script de tratamento de comando, para seleção de um arquivo;
  - Correção para tornar possível o uso da letra "V" no nome de Tags dinâmicas;
+ - Adequada a janela na qual o usuário informa os valores das TAGs dinâmicas para que apareça apenas TAGs ativas.
+
+### Versão 2.3
+- Adicionada rotina de verificação de erro no Script <i>*.js</i>.
+- Adicionada rotina de verificação de plausibilidade do comando antes de encerrar a janela de cadastro de novos comandos.
 
 
 
