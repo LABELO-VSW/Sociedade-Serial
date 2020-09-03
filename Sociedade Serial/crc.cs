@@ -32,7 +32,7 @@ namespace Sociedade_Serial
 
             foreach (byte b in frame)
             {
-                if (this.algorithm != "checksum")
+                if (this.algorithm != "Checksum")
                 {
                     if (!this.inputReflected)
                         c = b;
@@ -66,7 +66,7 @@ namespace Sociedade_Serial
                
             }
 
-            if (this.algorithm != "checksum")
+            if (this.algorithm != "Checksum")
             {
                 if (this.resultReflected)
                 {

@@ -181,8 +181,25 @@ namespace Sociedade_Serial
 
         private void ok_Click(object sender, RoutedEventArgs e)
         {
-            addCommand = true;
-            this.Close();
+
+            bool success = true;
+
+            success &= !this.name.Text.Equals("");
+            success &= !this.send.Text.Equals(""); 
+            success &= (this.algorithm.SelectedIndex>0?
+                        (this.w16.IsChecked == true || this.w32.IsChecked ==true ||
+                        this.w64.IsChecked == true || this.w8.IsChecked == true):true);
+
+            if (!success) {
+                MessageBox.Show("Não foram fornecidas todas as informações necessárias", "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                addCommand = true;
+                this.Close();
+            }
+
+            
         }
 
         

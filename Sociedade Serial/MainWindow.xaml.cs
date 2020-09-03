@@ -680,7 +680,7 @@ namespace Sociedade_Serial
 
         private void screenText_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            while (this.screenText.Document.Blocks.Count > 1000)
+            while (this.screenText.Document.Blocks.Count > 500)
             {
                 this.screenText.Document.Blocks.Remove(this.screenText.Document.Blocks.FirstBlock);
             }
@@ -870,7 +870,6 @@ namespace Sociedade_Serial
         private utils.command createCommand()
         {
             utils.command c = new utils.command();
-            if (commandWindow.name.Text.Equals("") || commandWindow.send.Text.Equals("")) throw new Exception();
             c.name = commandWindow.name.Text;
             c.send = commandWindow.send.Text;
             c.receive = commandWindow.receive.Text;

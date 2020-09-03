@@ -123,38 +123,62 @@ namespace Sociedade_Serial
                 CreateNoWindow = true,
                 Arguments = $"\"{script_name}\" \"raw_send:{raw_send}\" \"round:{round.ToString()}\" \"raw_answer:{raw_answer}\"",
                 UseShellExecute = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
+            ScriptAnswer sa = new ScriptAnswer();
+
             proc.Start();
+
+            string errorMessage = proc.StandardError.ReadToEnd();
+
             while (!proc.HasExited && proc.Responding)
             {
                 Thread.Sleep(50);
             }
-            ScriptAnswer sa = new ScriptAnswer();
 
-            sa.newRound = false;
-
-            while (!proc.StandardOutput.EndOfStream)
+            if (proc.ExitCode == 0)
             {
-                string str = proc.StandardOutput.ReadLine().Replace(",", "").Replace("'", "");
 
-                if (str.IndexOf("newRound") != -1)
+                sa.newRound = false;
+
+                string error = "";
+
+                while (!proc.StandardOutput.EndOfStream)
                 {
-                    string pstr = str.Substring(str.IndexOf("newRound"));
-                    sa.newRound = pstr.Split(':')[1].Trim() == "true";
+                    string str = proc.StandardOutput.ReadLine().Replace(",", "").Replace("'", "");
+
+                    error += $"{str}\n";
+
+                    if (str.IndexOf("newRound") != -1)
+                    {
+                        string pstr = str.Substring(str.IndexOf("newRound"));
+                        sa.newRound = pstr.Split(':')[1].Trim() == "true";
+                    }
+                    else if (str.IndexOf("processed_frame") != -1)
+                    {
+                        string pstr = str.Substring(str.IndexOf("processed_frame"));
+                        sa.processed_frame = pstr.Split(':')[1].Trim();
+                    }
+                    else if (str.IndexOf("error") != -1)
+                    {
+                        string pstr = str.Substring(str.IndexOf("error"));
+                        sa.error = pstr.Split(':')[1].Trim();
+                    }
                 }
-                else if (str.IndexOf("processed_frame") != -1)
-                {
-                    string pstr = str.Substring(str.IndexOf("processed_frame"));
-                    sa.processed_frame = pstr.Split(':')[1].Trim();
-                }
-                else if (str.IndexOf("error") != -1)
-                {
-                    string pstr = str.Substring(str.IndexOf("error"));
-                    sa.error = pstr.Split(':')[1].Trim();
-                }
+
             }
+            else
+            {
+                sa.error = errorMessage;
+                
+            }
+
+
+
+
+            
             return sa;
         }
         
