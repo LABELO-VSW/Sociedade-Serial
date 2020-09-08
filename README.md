@@ -20,6 +20,7 @@ Aplicação foi desenvolvida em C# com projeto de renderização utilizando Wind
 ### Versão 2.3
 - Adicionada rotina de verificação de erro no Script <i>*.js</i>.
 - Adicionada rotina de verificação de plausibilidade do comando antes de encerrar a janela de cadastro de novos comandos.
+- Corrigido bug de script de escrita quando o frame continha valores dinâmicos.
 
 
 

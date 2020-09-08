@@ -16,9 +16,10 @@
             </Grid.RowDefinitions>
             <Menu Grid.Row="0" Grid.ColumnSpan="7" Name="Menu">
                 <MenuItem Name="file" Header="Arquivo">
-                    <MenuItem Name="save" Header="Salvar ensaio" Click="save_Click"></MenuItem>
-                    <MenuItem Name="save_log" Header="Salvar Log" Click="save_log_Click"/>
-                    <MenuItem Name="script_save" Header="Salvar script" Click="script_save_Click"></MenuItem>
+                    <MenuItem Header="Importar Script" Click="scriptAddress_Click"/>
+                    <MenuItem Name="script_save" Header="Exportar Script" Click="script_save_Click"></MenuItem>
+                    <MenuItem Name="save" Header="Salvar Resultados de Ensaio" Click="save_Click"></MenuItem>
+                    <MenuItem Name="save_log" Header="Salvar Log" Click="save_log_Click"/>                    
                 </MenuItem>
                 <MenuItem Name="help" Header="Ajuda">
                     <MenuItem Name="about" Header="Sobre" Click="about_Click"></MenuItem>

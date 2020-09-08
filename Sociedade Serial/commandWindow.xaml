@@ -26,7 +26,7 @@
                     PreviewKeyDown="hex_PreviewKeyDown"
                     KeyDown="hex_KeyDown"
                  />
-                <Label Content="Resposta esperada:" Margin="0" Name="rec_lb"/>
+                <Label Content="Resposta esperada:" Margin="0" Name="rec_lb"/>           
                 <TextBox 
                     Name="receive" 
                     Margin="10,0,10,10" 

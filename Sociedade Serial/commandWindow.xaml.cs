@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Text.RegularExpressions;
 
+
 namespace Sociedade_Serial
 {
     
@@ -191,10 +192,15 @@ namespace Sociedade_Serial
                         this.w64.IsChecked == true || this.w8.IsChecked == true):true);
 
             if (!success) {
-                MessageBox.Show("Não foram fornecidas todas as informações necessárias", "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(utils.ErrorMessages.Invalid_Command, "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
             {
+                this.from.Text = (this.from.Text == "" )? "0" : this.from.Text;
+                this.polynominal.Text = (this.polynominal.Text == "") ? "0" : this.polynominal.Text;
+                this.initialValue.Text = (this.initialValue.Text == "") ? "0" : this.initialValue.Text;
+                this.finalXorVal.Text = (this.finalXorVal.Text == "") ? "0" : this.finalXorVal.Text;
+
                 addCommand = true;
                 this.Close();
             }
@@ -454,7 +460,10 @@ namespace Sociedade_Serial
         {
             Microsoft.Win32.OpenFileDialog newScript = new Microsoft.Win32.OpenFileDialog();
             newScript.Filter = "Script de tratamento|*.js";
-            newScript.InitialDirectory = "T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts";
+            
+            if (System.IO.Directory.Exists(utils.constants.script_default_address))
+                newScript.InitialDirectory = utils.constants.script_default_address;
+
             if (newScript.ShowDialog() == true)
             {
                 try
@@ -489,5 +498,6 @@ namespace Sociedade_Serial
                 }
             }
         }
+
     }
 }

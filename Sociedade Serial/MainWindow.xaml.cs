@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using System.Timers;
 using System.Windows;
@@ -55,7 +56,8 @@ namespace Sociedade_Serial
             this.WindowState = WindowState.Maximized;
             InitializeComponent();
 
-            
+            this.screenText.Document.Blocks.Clear();
+
             this.baudrate.ItemsSource = c.baudRates;
             this.dataBits.ItemsSource = c.dataBits;
             this.stopBits.ItemsSource = c.stopBits;
@@ -144,9 +146,9 @@ namespace Sociedade_Serial
             else
             {
                 string str = "";
-                if (DateTime.Now.Subtract(lastRead) > new TimeSpan(2000000))
+                if (DateTime.Now.Subtract(lastRead) > new TimeSpan(0,0,1))
                 {
-                    str += $"\n\n[{DateTime.Now}] - Leitura: ";
+                    str += $"[{DateTime.Now}] - Leitura: ";
                 }
                 lastRead = DateTime.Now;
                 string pstr = "";
@@ -159,16 +161,21 @@ namespace Sociedade_Serial
 
                 this.screenText.Dispatcher.Invoke((Action)(() =>
                 {
+                        if (!str.Contains("["))
+                        {
+                            screenText.AppendText(" " + str);
+                            if (!this.buffer.IsEnabled) htmlTextOutput.Add($"<font color=\"#FF0000\">{str}</font>");
+                        }
+                        else
+                        {
+                            Paragraph p = new Paragraph();
+                            p.Inlines.Add(str);
+                            p.Foreground = Brushes.DarkRed;
+                            this.screenText.Document.Blocks.Add(p);
+                            if (!this.buffer.IsEnabled) htmlTextOutput.Add($"<br><br><font color=\"#FF0000\">{str}</font>");
+                        }
 
-                    Run r = new Run(str);
-
-                    r.Foreground = Brushes.DarkRed;
-
-                    Paragraph p = new Paragraph();
-                    p.Inlines.Add(r);
-                    this.screenText.Document.Blocks.Add(p);
-
-                    if (!this.buffer.IsEnabled) htmlTextOutput.Add($"<font color=\"#FF0000\">{r.Text.Replace("\n","<br>")}</font>"); 
+                   
 
 
                 }));
@@ -183,6 +190,10 @@ namespace Sociedade_Serial
             
             Microsoft.Win32.OpenFileDialog newScript = new Microsoft.Win32.OpenFileDialog();
             newScript.Filter = "Script|*.json";
+            
+            if (Directory.Exists(utils.constants.script_default_address))
+                newScript.InitialDirectory = utils.constants.script_default_address;
+            
             if (newScript.ShowDialog() == true)
             {
                 try
@@ -276,6 +287,8 @@ namespace Sociedade_Serial
             this.screenText.Document.Blocks.Clear();
 
             htmlTextOutput.Clear();
+
+            lastRead = DateTime.Now.Subtract(new TimeSpan(1,0,0));
         }
 
         private void finish_Click(object sender, RoutedEventArgs e)
@@ -440,11 +453,11 @@ namespace Sociedade_Serial
 
                 for (int j = 0; j < replacer.Count; j++)
                 {
-                    c.send = c.send.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));
-                    c.receive = c.receive.Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));  
+                    c.send = c.send.ToUpper().Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));
+                    c.receive = c.receive.ToUpper().Replace($"#{tags[j]}#", utils.getFrameFormat(replacer[j], false));  
                 }
-                commandOnTest.sent.raw = c.send.ToUpper();
-                commandOnTest.expectedAnswer = c.receive.ToUpper();
+                commandOnTest.sent.raw = c.send;
+                commandOnTest.expectedAnswer = c.receive;
                 if (c.send_script == null) c.send_script = "";
                 
                 if (c.send_script.ToLower().IndexOf("js") < 0)
@@ -588,47 +601,30 @@ namespace Sociedade_Serial
         {
             try
             {
-                Run r;
-                if (this.screenText.Document.Blocks.Count == 1)
-                {
-                    r =  new Run($"[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}");
-                }
-                else
-                {
-                    r =  new Run($"\n[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}");
-                }
-                
-                htmlTextOutput.Add($"<p style=\"color:#0000FF\">{r.Text}</style>");
-                r.Foreground = Brushes.Blue;
+                string str = $"[{DateTime.Now}] - Escrita: {str2Screen.ToUpper()}";
+
                 Paragraph p = new Paragraph();
-                p.Inlines.Add(r);
+                p.Foreground = Brushes.Blue;
+                
+                p.Inlines.Add (str);
+                
+                htmlTextOutput.Add($"<p style=\"color:#0000FF\">{str}</style>");
                 this.screenText.Document.Blocks.Add(p);
+
             }catch(Exception e)
             {
                 MessageBox.Show(e.Message);
             }
             this.UpdateLayout();
-
-
         }
         private void read2Screen(string read2Screen)
         {
-            Run r;
-            if (this.screenText.Document.Blocks.Count == 1)
-            {
-                r = new Run($"[{DateTime.Now.ToString()}] Leitura - {read2Screen}");
-            }
-            else
-            {
-                r = new Run($"\n[{DateTime.Now.ToString()}] Leitura - {read2Screen}");
-            }
-            
-
-            r.Foreground = Brushes.DarkRed;
+            string str = $"[{DateTime.Now.ToString()}] Leitura - {read2Screen}";
             Paragraph p = new Paragraph();
-            p.Inlines.Add(r);
+            p.Inlines.Add(str);
+            p.Foreground = Brushes.DarkRed;
             this.screenText.Document.Blocks.Add(p);
-            htmlTextOutput.Add($"<p style=\"color:#FF0000\">{r.Text}</style><br><br>");
+            htmlTextOutput.Add($"<p style=\"color:#FF0000\">{str}</style><br><br>");
 
         }
 
@@ -644,6 +640,12 @@ namespace Sociedade_Serial
         {
             Microsoft.Win32.SaveFileDialog saveFile = new Microsoft.Win32.SaveFileDialog();
             saveFile.Filter = "Arquivo html|*.html";
+            saveFile.AddExtension = true;
+            saveFile.DefaultExt = "html";
+
+            if (Directory.Exists(utils.constants.register_default_address))
+                saveFile.InitialDirectory = utils.constants.register_default_address;
+
             if (saveFile.ShowDialog() == true)
             {
                 string fileName = saveFile.FileName;
@@ -802,7 +804,7 @@ namespace Sociedade_Serial
                 }
                 catch
                 {
-                    MessageBox.Show("Não foram fornecidas todas as informações necessárias", "Erro", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(utils.ErrorMessages.unexpected_error, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
                     edit_Click(sender, e);
                 }
                 
@@ -829,7 +831,7 @@ namespace Sociedade_Serial
                 }
                 catch
                 {
-                    MessageBox.Show("Não foram fornecidas todas as informações necessárias","Erro",MessageBoxButton.OK,MessageBoxImage.Warning);
+                    MessageBox.Show(utils.ErrorMessages.unexpected_error, "Erro",MessageBoxButton.OK,MessageBoxImage.Error);
                     add_Click(sender, e);
                 }
                 
@@ -842,6 +844,11 @@ namespace Sociedade_Serial
         {
             Microsoft.Win32.SaveFileDialog saveFile = new Microsoft.Win32.SaveFileDialog();
             saveFile.Filter = "Arquivo json|*.json";
+            saveFile.AddExtension = true;
+            saveFile.DefaultExt = "json";
+
+            if (Directory.Exists(utils.constants.script_default_address))
+                saveFile.InitialDirectory = utils.constants.script_default_address;
 
             if (saveFile.ShowDialog() == true)
             {
@@ -922,7 +929,6 @@ namespace Sociedade_Serial
             {
                 tf.processed = tf.raw;
 
-
             }
             else
             {
@@ -961,6 +967,12 @@ namespace Sociedade_Serial
             TextRange tr = new TextRange(this.screenText.Document.ContentStart,
                                          this.screenText.Document.ContentEnd);
             saveFile.Filter = "Arquivo html|*.html";
+            saveFile.AddExtension = true;
+            saveFile.DefaultExt = "html";
+
+            if (Directory.Exists(utils.constants.register_default_address))
+                saveFile.InitialDirectory = utils.constants.register_default_address;
+
             if (saveFile.ShowDialog() == true)
             {
                 string fileName = saveFile.FileName;
@@ -980,7 +992,7 @@ namespace Sociedade_Serial
                     sw.WriteLine($"<b>Data de emissão do relatório: </b>{DateTime.Now.ToString("dd/MM/yyyy")}<br>");
                     if (!this.tag.Text.Equals("")) sw.WriteLine("<b>TAG da banca de energia: </b>" + this.tag.Text + "<br>");
                     sw.WriteLine("<br>");
-                    sw.WriteLine(tr.Text.Replace("\n","<br>"));
+                    sw.WriteLine(tr.Text.Replace("[","<br><br>["));
                     sw.WriteLine("</div>");
                     sw.WriteLine("</body>");
                     sw.WriteLine("</html>");

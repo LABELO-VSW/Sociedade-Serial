@@ -4,7 +4,7 @@
   <description asmv2:iconFile="icon.ico" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="Sociedade Serial" version="2.2.0.3" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="Sociedade Serial" version="2.3.0.3" language="neutral" processorArchitecture="msil" />
     <commandLine file="Sociedade Serial.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -55,14 +55,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Sociedade Serial.exe" size="310232">
-      <assemblyIdentity name="Sociedade Serial" version="2.2.0.3" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Sociedade Serial.exe" size="311768">
+      <assemblyIdentity name="Sociedade Serial" version="2.3.0.3" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>3U4Or8V9YHDcwzlamL7ZNGnbQd+9Yj8K9fwAKzjviyA=</dsig:DigestValue>
+        <dsig:DigestValue>JDgiJi7wRMCDwVr3emWk4+5eposm9CrEAa6/ZJ2Fz6M=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

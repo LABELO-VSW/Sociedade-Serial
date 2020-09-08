@@ -11,6 +11,11 @@ namespace Sociedade_Serial
 {
     public class utils
     {
+        public static class ErrorMessages
+        {
+            public const string Invalid_Command = "Não foram fornecidas todas as informações necessárias";
+            public const string unexpected_error = "Ocorreu um erro inesperado!";
+        }
         public struct script
         {
             public string name;
@@ -53,6 +58,8 @@ namespace Sociedade_Serial
             public readonly string[] stopBits = new string[] { "1", "2", "1.5" };
             public readonly string[] parity = new string[] { "None", "Odd", "Even", "Mark", "Space" };
             public readonly string[] flowControl = new string[] { "None", "XOnXOff", "RequestToSend", "RequestToSendXOnXOff" };
+            public const string script_default_address = "T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts\\";
+            public const string register_default_address = "T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\03 - Registros";
         }
 
         public static script loadScript(string address)
@@ -106,7 +113,8 @@ namespace Sociedade_Serial
         {
             Process proc = new Process();
             
-            if (script_name.IndexOf("\\") < 0 && script_name.IndexOf("/") < 0) script_name = $"T:\\Laboratórios\\Equipamentos de Uso Profissional e Infra-Estrutura\\Verificação de Software\\11 - Compartilhado\\06 - Scripts\\{script_name}";
+            if (script_name.IndexOf("\\") < 0 && script_name.IndexOf("/") < 0) 
+                script_name = $"{constants.script_default_address}{script_name}";
 
             if (!File.Exists(script_name)){
                 return new ScriptAnswer()
